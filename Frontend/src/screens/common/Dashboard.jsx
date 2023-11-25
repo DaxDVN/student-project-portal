@@ -1,260 +1,199 @@
-
-import React from 'react'
+import React, {useEffect, useState} from 'react'
 import HeaderContent from '../../components/common/layout/HeaderContent.jsx';
 import CardStatic from '../../components/common/table/CardStatic.jsx';
-import TableRow from '../../components/class/TableRow.jsx';
+import {useDispatch} from 'react-redux';
+import {viewDashboard} from '../../features/common/commonSlice.js';
+import CardClass from '../../components/class/CardClass.jsx';
+import CardForm from '../../components/class/CardForm.jsx';
+import {getCurrentUser} from '../../features/user/userSlice.js';
+import {getClassByStudent, getManagerAssignedClassNotPaging} from '../../features/class/classEntitySlice.js';
+import {getProjectByStudent, getProjectsByManager} from '../../features/project/projectSlice.js';
+import CardProject from '../../components/project/CardProject.jsx';
 
-export const starStudent = [
-  {
-    class_id: 'PRE2209',
-    id: 1,
-    fullName: 'Alex',
-    className: '10A',
-    mobile: '097 3584 5870',
-    address: '911 Deer Ridge Drive,USA',
-    role: 'student',
-    mark: '1185',
-    percentage: '98%',
-    year: '2019'
-  },
-  {
-    class_id: 'PRE2209',
-    id: 2,
-    fullName: 'John Smith',
-    className: '10A',
-    mobile: '097 3584 5870',
-    address: '911 Deer Ridge Drive,USA',
-    role: 'student',
-    mark: '1185',
-    percentage: '98%',
-    year: '2019'
-  },
-  {
-    class_id: 'PRE2209',
-    id: 3,
-    fullName: 'Jimmy',
-    className: '10A',
-    mobile: '097 3584 5870',
-    address: '911 Deer Ridge Drive,USA',
-    role: 'student',
-    mark: '1185',
-    percentage: '98%',
-    year: '2019'
-  },
-  {
-    class_id: 'PRE2209',
-    id: 4,
-    fullName: 'John Smith',
-    className: '10A',
-    mobile: '097 3584 5870',
-    address: '911 Deer Ridge Drive,USA',
-    role: 'student',
-    mark: '1185',
-    percentage: '98%',
-    year: '2019'
-  },
-  {
-    class_id: 'PRE2209',
-    id: 5,
-    fullName: 'jack',
-    className: '10A',
-    mobile: '097 3584 5870',
-    address: '911 Deer Ridge Drive,USA',
-    role: 'student',
-    mark: '1185',
-    percentage: '98%',
-    year: '2019'
-  }
-]
-const cardMock = [
-  {
-    id: 1,
-    color: 'card bg-one w-100',
-    iconClass: 'fas fa-admin-graduate',
-    number: '50055',
-    type: 'Students'
-  },
-  {
-    id: 2,
-    color: 'card bg-two w-100',
-    iconClass: 'fas fa-crown',
-    number: '50+',
-    type: 'Awards'
-  },
-  {
-    id: 3,
-    color: 'card bg-three w-100',
-    iconClass: 'fas fa-building',
-    number: '30+',
-    type: 'Department'
-  },
-  {
-    id: 4,
-    color: 'card bg-four w-100',
-    iconClass: 'fas fa-file-invoice-dollar',
-    number: '$505',
-    type: 'Revenue'
-  }
-]
+
 const Dashboard = () => {
   const prePage = ''
-
+  const dispatch = useDispatch();
+  const [dashboardInfo, setDashboardInfo] = useState( [] );
+  const [currentUser, setCurrentUser] = useState( {} );
+  const [studentDashBoard, setStudentDashBoard] = useState(
+    {
+      assignedClass: [],
+      assignedProject: [],
+    },
+  )
+  useEffect( () => {
+    const fetchData = async () => {
+      await dispatch( getCurrentUser() )
+        .then(
+          async ( response ) => {
+            setCurrentUser( response.payload )
+            if (response.payload.role === 'ADMIN' || response.payload.role === 'SUBJECT_MANAGER') {
+              console.log( 1 )
+              await dispatch( viewDashboard( {role: 'admin'} ) )
+                .then(
+                  ( response ) => {
+                    if (response.type.includes( 'fulfilled' )) {
+                      setDashboardInfo( response.payload )
+                    }
+                  },
+                )
+            }
+            if (response.payload.role === 'STUDENT') {
+              try {
+                const [classResponse, projectResponse] = await Promise.all( [
+                  dispatch( getClassByStudent( {id: response.payload.id} ) ),
+                  dispatch( getProjectByStudent( {id: response.payload.id} ) ),
+                ] );
+                
+                setStudentDashBoard( {
+                  ...studentDashBoard,
+                  assignedClass: classResponse.payload,
+                  assignedProject: projectResponse.payload,
+                } );
+                
+              } catch (error) {
+                console.error( 'Error fetching class or project data:', error );
+              }
+            }
+            if (response.payload.role === 'LECTURE') {
+              try {
+                const [classResponse, projectResponse] = await Promise.all( [
+                  dispatch( getManagerAssignedClassNotPaging( {manager: response.payload.id} ) ),
+                  dispatch( getProjectsByManager( {id: response.payload.id} ) ),
+                ] );
+                
+                setStudentDashBoard( {
+                  ...studentDashBoard,
+                  assignedClass: classResponse.payload,
+                  assignedProject: projectResponse.payload,
+                } );
+                
+              } catch (error) {
+                console.error( 'Error fetching class or project data:', error );
+              }
+            }
+          },
+        )
+    }
+    fetchData()
+  }, [] );
+  console.log(currentUser)
+  const cardMock = [
+    {
+      id: 1,
+      color: 'card bg-one w-100',
+      iconClass: 'fas fa-user-pen',
+      number: dashboardInfo[0],
+      type: 'Users',
+    },
+    {
+      id: 2,
+      color: 'card bg-two w-100',
+      iconClass: 'fas fa-book-atlas',
+      number: dashboardInfo[1],
+      type: 'Subjects',
+    },
+    {
+      id: 3,
+      color: 'card bg-three w-100',
+      iconClass: 'fas fa-group-arrows-rotate',
+      number: dashboardInfo[2],
+      type: 'Classes',
+    },
+    {
+      id: 4,
+      color: 'card bg-four w-100',
+      iconClass: 'fas fa-project-diagram',
+      number: dashboardInfo[3],
+      type: 'Projects',
+    },
+  ]
   return (
     <>
       <HeaderContent
-        pageTitle={'Welcome Admin!'}
-        pageName={'Dashboard'}
-        prePage={prePage}
+        pageTitle={ 'Welcome back' }
+        pageName={ 'Dashboard' }
+        prePage={ prePage }
       />
-      <div className="row">
-        {cardMock.map((card) => (
-          <CardStatic
-            color={card.color}
-            iconClass={card.iconClass}
-            number={card.number}
-            type={card.type}
-            key={card.id}
-          />
-        ))}
-      </div>
+      {
+        currentUser !== null &&
+        (currentUser.role === 'ADMIN' ||
+        currentUser.role === 'SUBJECT_MANAGER') &&
+        (
+          <div className='row'>
+            { cardMock.map( ( card ) => (
+              <CardStatic
+                color={ card.color }
+                iconClass={ card.iconClass }
+                number={ card.number }
+                type={ card.type }
+                key={ card.id }
+              />
+            ) ) }
+          </div>
+        )
+      }
+      {
+        (currentUser.role === 'STUDENT' ||
+        currentUser.role === 'LECTURE') &&
+        (
+          <>
+            <div className='row'>
+              <div className='col-sm-12'>
+                <h4>Assigned Class</h4>
+                <div className='card card-table'>
+                  <div className='card-body'>
+                    <div className='table-responsive'>
+                      <table className='table table-hover table-center mb-0 datatable'>
+                        <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Class Code</th>
+                          <th>Semester</th>
+                          <th>Subject</th>
+                          <th>Manager</th>
+                          <th>Status</th>
+                          {
+                            currentUser.role === 'SUBJECT_MANAGER' &&
+                            (
+                              <th>Action</th>
+                            )
+                          }
+                        </tr>
+                        </thead>
+                        <tbody>
+                        { studentDashBoard.assignedClass.map(
+                          ( el ) => (
+                            <CardClass key={ el.id } classElement={ el } role={ currentUser ? currentUser.role : 'null' }/>
+                          ),
+                        ) }
+                        </tbody>
+                      </table>
+                    
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <h4>Assigned Project</h4>
+            <section className='comp-section comp-cards'>
+              <div className='row'>
+                {
+                  studentDashBoard.assignedProject !== undefined &&
+                  studentDashBoard.assignedProject.map(
+                    ( el ) => (
+                      <CardProject key={ el.id } project={ el } role={ currentUser ? currentUser.role : 'null' }/>
+                    ),
+                  )
+                }
+              </div>
+            </section>
+          </>
+        )
+        
+      }
 
-      <div className="row">
-        <div className="col-md-12 col-lg-6">
-          <div className="card card-chart">
-            <div className="card-header">
-              <div className="row align-items-center">
-                <div className="col-6">
-                  <h5 className="card-title">Revenue</h5>
-                </div>
-                <div className="col-6">
-                  <ul className="list-inline-group text-right mb-0 pl-0">
-                    <li className="list-inline-item">
-                      <div className="form-group mb-0 amount-spent-select">
-                        <select className="form-control form-control-sm">
-                          <option>Today</option>
-                          <option>Last Week</option>
-                          <option>Last Month</option>
-                        </select>
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div className="card-body">
-              <div id="apexcharts-area" />
-            </div>
-          </div>
-        </div>
-        <div className="col-md-12 col-lg-6">
-          <div className="card card-chart">
-            <div className="card-header">
-              <div className="row align-items-center">
-                <div className="col-6">
-                  <h5 className="card-title">Number of Students</h5>
-                </div>
-                <div className="col-6">
-                  <ul className="list-inline-group text-right mb-0 pl-0">
-                    <li className="list-inline-item">
-                      <div className="form-group mb-0 amount-spent-select">
-                        <select className="form-control form-control-sm">
-                          <option>Today</option>
-                          <option>Last Week</option>
-                          <option>Last Month</option>
-                        </select>
-                      </div>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-            <div className="card-body">
-              <div id="bar" />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="row">
-        <div className="col-md-6 d-flex">
-          <div className="card flex-fill">
-            <div className="card-header">
-              <h5 className="card-title">Star Students</h5>
-            </div>
-            <div className="card-body">
-              <div className="table-responsive">
-                <table className="table table-hover table-center">
-                  <thead className="thead-light">
-                    <tr>
-                      <th>ID</th>
-                      <th>Name</th>
-                      <th className="text-center">Marks</th>
-                      <th className="text-center">Percentage</th>
-                      <th className="text-right">Year</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {starStudent.map((element) => (
-                      <TableRow
-                        id={element.id}
-                        fullName={element.fullName}
-                        mark={element.mark}
-                        percentage={element.percentage}
-                        year={element.year}
-                        key={element.id}
-                      />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-6 d-flex">
-          <div className="card flex-fill">
-            <div className="card-header">
-              <h5 className="card-title">Student Activity</h5>
-            </div>
-            <div className="card-body">
-              <ul className="activity-feed">
-                <li className="feed-item">
-                  <div className="feed-date">Apr 13</div>
-                  <span className="feed-text">
-                    <a>John Doe</a> won 1st place in <a>Chess</a>
-                  </span>
-                </li>
-                <li className="feed-item">
-                  <div className="feed-date">Mar 21</div>
-                  <span className="feed-text">
-                    <a>Justin Lee</a> participated in{' '}
-                    <a href="invoice.html">Carrom</a>
-                  </span>
-                </li>
-                <li className="feed-item">
-                  <div className="feed-date">Feb 2</div>
-                  <span className="feed-text">
-                    <a>Justin Lee</a>attended internation conference in{' '}
-                    <a href="profile.html">St.John School</a>
-                  </span>
-                </li>
-                <li className="feed-item">
-                  <div className="feed-date">Apr 13</div>
-                  <span className="feed-text">
-                    <a>John Doe</a> won 1st place in <a>Chess</a>
-                  </span>
-                </li>
-                <li className="feed-item">
-                  <div className="feed-date">Mar 21</div>
-                  <span className="feed-text">
-                    <a>Justin Lee</a> participated in{' '}
-                    <a href="invoice.html">Carrom</a>
-                  </span>
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
     </>
   )
 }

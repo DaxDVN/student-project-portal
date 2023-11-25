@@ -54,6 +54,12 @@ export const getAllUsers = createAsyncThunk(
     return getAllUsersThunk( `/users?page=${ user.currentPage }&size=${ user.pageSize }&role=${ user.selectedRole }&status=${ user.selectedStatus }&name=${ user.searchName }&order=${ user.order }&sortBy=${ user.sortBy }`, thunkAPI )
   },
 )
+export const getUserByListId = createAsyncThunk(
+  'user/getUserByListId',
+  async ( user, thunkAPI ) => {
+    return getAllUsersThunk( `/users/list/${user.list}`, thunkAPI )
+  },
+)
 export const getAllStudents = createAsyncThunk(
   'user/getAllStudents',
   async ( user, thunkAPI ) => {
@@ -198,6 +204,15 @@ const userSlice = createSlice( {
         state.isLoading = true
       } )
       .addCase( changeAvatar.rejected, ( state ) => {
+        state.isLoading = false
+      } )
+      .addCase( getUserByListId.fulfilled, ( state ) => {
+        state.isLoading = false
+      } )
+      .addCase( getUserByListId.pending, ( state ) => {
+        state.isLoading = true
+      } )
+      .addCase( getUserByListId.rejected, ( state ) => {
         state.isLoading = false
       } )
   },

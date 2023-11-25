@@ -171,28 +171,6 @@ const SystemSettingTable = ( props ) => {
       />
       <div className=''>
         <div className='row mb-2'>
-          <div className='col' style={ {display: 'flex', textAlign: 'center'} }>
-            Filter by Group:
-            <div className='dropdown ml-2'>
-              <button className='btn btn-secondary btn-sm dropdown-toggle'
-                      type='button' id='dropdownMenuButton'
-                      data-toggle='dropdown'
-                      onClick={ handleToggle }
-              >
-                Select group
-              </button>
-              <div className={ `dropdown-menu ${ isOpen ? 'show' : ' ' }` } aria-labelledby='dropdownMenuButton'>
-                <button className='dropdown-item' onClick={ () => handleFilter( 'default' ) }>Default</button>
-                <button className='dropdown-item' onClick={ () => handleFilter( 'role' ) }>Role</button>
-                <button className='dropdown-item' onClick={ () => handleFilter( 'semester' ) }>Semester</button>
-                <button className='dropdown-item' onClick={ () => handleFilter( 'email' ) }>Permitted email domain
-                </button>
-              </div>
-            </div>
-          </div>
-          {/* <div className='col'>
-
-          </div> */ }
         </div>
         {/* <Row style={{textAlign: 'center' , display:'flex' }}>
                 <Col style={{margin: '30px', textAlign:'right'}}>Filter by User</Col>
@@ -240,7 +218,7 @@ const SystemSettingTable = ( props ) => {
       { isFilter.isEnable === false &&
         <div className=' ml-2 mt-3 ' style={ {display: 'flex', justifyContent: 'flex-end'} }>
           <Pagination page={ page } paging={ paging } handlePageNumber={ handlePageNumber }
-                      handleIncreaseOrdecrease={ handleIncreaseOrDecrease }/>
+                      handleIncreaseOrDecrease={ handleIncreaseOrDecrease }/>
         </div>
       }
     </>

@@ -98,7 +98,11 @@ const SubjectForm = ( props ) => {
       props.setLoad( !props.load )
       dispatch( toggleAdd() )
     } else {
-      toast.error( 'Failed, your input is so f*ckin stupid. Check it before you do something!' )
+      if (response.payload.status === 500) {
+        toast.error( 'Check Your Input Again' )
+      } else {
+        toast.error( 'Your Input Is Already Exist' )
+      }
     }
   }
   

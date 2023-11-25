@@ -67,3 +67,4 @@ public class User {
     @CreationTimestamp
     private Timestamp updated_at;
 }
+

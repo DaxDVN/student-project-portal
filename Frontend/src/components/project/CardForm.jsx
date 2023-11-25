@@ -2,27 +2,24 @@ import React, {useEffect, useState} from 'react';
 import {useDispatch, useSelector} from 'react-redux';
 import {
   getCurrentUser,
-  getUserByRoleWithoutPaging,
 } from '../../features/user/userSlice.js';
-import {getListOfSubjectWithoutPaging} from '../../features/subject/subjectSlice.js';
-import {addClass, toggleAdd} from '../../features/class/classEntitySlice.js';
+import { getManagerAssignedClassNotPaging} from '../../features/class/classEntitySlice.js';
+import {addProject, toggleAdd} from '../../features/project/projectSlice.js';
 import {toast, ToastContainer} from 'react-toastify';
-import InputInfoClass from './InputInfoClass.jsx';
 import 'react-toastify/dist/ReactToastify.css';
-import {
-  getListOfSystemSettingWithoutPaging,
-} from '../../features/system-setting/systemSettingSlice.js';
-
 const CardForm = ( {load, setLoad} ) => {
-  const subject = JSON.parse( localStorage.getItem( 'subject-classes' ) );
   const dispatch = useDispatch();
-  const {isFormDisplay} = useSelector( ( store ) => store.classEntity );
+  const {isFormDisplay} = useSelector( ( store ) => store.project );
   const [formData, setFormData] = useState( {
     code: '',
     subject: '',
     detail: '',
     manager: '',
-    semester: '',
+    projectName: '',
+    title: '',
+    groupName: '',
+    description: '',
+    class: '',
   } );
   const [classError, setClassError ] = useState('');
   const [list, setList] = useState( {
@@ -40,7 +37,7 @@ const CardForm = ( {load, setLoad} ) => {
   
   const handSubmitForm = async (e) => {
     e.preventDefault()
-    if (!formData.code || !formData.subject || !formData.manager || !formData.detail){
+    if (!formData.title || !formData.groupName || !formData.projectName || !formData.description || !formData.class || formData.class === '-- Select Class--'){
       setClassError('Please input all fields')
       return
     }
@@ -48,12 +45,12 @@ const CardForm = ( {load, setLoad} ) => {
     await dispatch( getCurrentUser() ).then( async ( response ) => {
       const creator = response.payload.id;
       const responseAdd = await dispatch(
-        addClass( {
-          code: formData.code,
-          subject: subject === null ? formData.subject : subject.id,
-          detail: formData.detail,
-          manager: formData.manager,
-          semester: formData.semester,
+        addProject( {
+          title: formData.title,
+          groupName:formData.groupName,
+          description: formData.description,
+          class: formData.class,
+          projectName: formData.projectName,
           creator,
         } ),
       );
@@ -61,16 +58,17 @@ const CardForm = ( {load, setLoad} ) => {
         dispatch( toggleAdd() );
         setFormData({
           ...formData,
-          code: '',
-          subject: '',
+          title: '',
+          groupName: '',
           detail: '',
-          manager: '',
-          semester: '',
+          description: '',
+          projectName: '',
+          class: '-- All classes --',
         })
         setLoad( !load );
       } else {
         if (responseAdd.payload === 409){
-          toast.error( 'This Class is already exist' );
+          toast.error( 'This Project is already exist' );
         }
         else{
           toast.error( 'Check your input again' );
@@ -81,17 +79,18 @@ const CardForm = ( {load, setLoad} ) => {
   
   useEffect( () => {
     const fetchData = async () => {
-      const [response1, response2, response3] = await Promise.all( [
-        dispatch( getListOfSubjectWithoutPaging() ),
-        dispatch( getUserByRoleWithoutPaging( {role: 'LECTURE'} ) ),
-        dispatch( getListOfSystemSettingWithoutPaging( {group: 'SEMESTER'} ) ),
-      ] );
-      setList( {
-        ...list,
-        subjectList: response1.payload,
-        managerList: response2.payload,
-        semesterList: response3.payload,
-      } );
+      await dispatch( getCurrentUser() )
+        .then( async ( manager ) => {
+          await dispatch( getManagerAssignedClassNotPaging( {manager: manager.payload.id} ) )
+            .then(
+              ( response ) => {
+                if (response.type.includes( 'fulfilled' )) {
+                  console.log(response)
+                  setList({...list, subjectList: response.payload}  )
+                }
+              },
+            )
+        } )
     };
     if (isFormDisplay === true) {
       fetchData();
@@ -130,35 +129,62 @@ const CardForm = ( {load, setLoad} ) => {
       >
         <div className='card'>
           <div className='card-body'>
+            <>
+              <h4>Add Project</h4>
+            </>
             <form onSubmit={ handSubmitForm }>
-              <div className='row'>
-                <div className='col-12'>
-                  <h5 className='form-title'>
-                    <span>Add a Class</span>
-                  </h5>
-                  <span
-                    className='badge badge-info ml-2'
-                  >
-                    PENDING
-                  </span>
+              <div className='col-12'>
+                <div className='form-group'>
+                  <span className={ 'col-4' }>Project Name</span>
+                  <input
+                    type={'text'}
+                    name='projectName'
+                    className='form-control'
+                    placeholder='Enter project name here'
+                    value={ formData.projectName }
+                    onChange={ handleChange }
+                  />
                 </div>
-                <InputInfoClass
-                  label={ 'Class Code' }
-                  name='code'
-                  placeholder='Code'
-                  value={ formData.code }
-                  onChange={ handleChange }
-                />
+                <br/>
               </div>
               <div className='col-12'>
                 <div className='form-group'>
-                  <span className={ 'col-4' }>Detail</span>
+                  <span className={ 'col-4' }>Title</span>
+                  <input
+                    type={'text'}
+                    name='title'
+                    className='form-control'
+                    placeholder='Enter title here'
+                    value={ formData.title }
+                    onChange={ handleChange }
+                  />
+                </div>
+                <br/>
+              </div>
+              <div className='col-12'>
+                <div className='form-group'>
+                  <span className={ 'col-4' }>Group Name</span>
+                  <input
+                    type={'text'}
+                    name='groupName'
+                    className='form-control'
+                    placeholder='Enter group name here'
+                    value={ formData.groupName }
+                    onChange={ handleChange }
+                  />
+                </div>
+                <br/>
+              </div>
+ 
+              <div className='col-12'>
+                <div className='form-group'>
+                  <span className={ 'col-4' }>Description</span>
                   <textarea
                     rows={3}
-                    name='detail'
+                    name='description'
                     className='form-control'
-                    placeholder='Enter detail here'
-                    value={ formData.detail }
+                    placeholder='Enter description here'
+                    value={ formData.description }
                     onChange={ handleChange }
                   />
                 </div>
@@ -167,58 +193,18 @@ const CardForm = ( {load, setLoad} ) => {
               
               <div className='col-12'>
                 <div className='form-group'>
-                  <label>Subject</label>
+                  <label>Class</label>
                   <select
                     className='form-control'
-                    name={ 'subject' }
-                    value={ subject === null ? formData.subject : subject.id }
+                    name={ 'class' }
+                    value={ formData.class }
                     onChange={ handleChange }
-                    disabled={ subject !== null }
                   >
-                    <option>-- Select Subject--</option>
+                    <option>-- Select Class--</option>
                     { list.subjectList.length &&
                       list.subjectList.map( ( el ) => (
                         <option key={ el.id } value={ el.id }>
-                          { el.code + ' | ' + el.name }
-                        </option>
-                      ) ) }
-                  </select>
-                </div>
-              </div>
-              <div className='col-12'>
-                <div className='form-group'>
-                  <label>Semester</label>
-                  <select
-                    className='form-control'
-                    name={ 'semester' }
-                    value={ formData.semester  }
-                    onChange={ handleChange }
-                  >
-                    <option>-- Select Semester--</option>
-                    { list.semesterList.length &&
-                      list.semesterList.map( ( el ) => (
-                        <option key={ el.name } value={ el.name }>
-                          { 'Semester ' + el.name }
-                        </option>
-                      ) ) }
-                  </select>
-                </div>
-              </div>
-              
-              <div className='col-12'>
-                <div className='form-group'>
-                  <label>Manager</label>
-                  <select
-                    className='form-control'
-                    name={ 'manager' }
-                    value={ formData.manager }
-                    onChange={ handleChange }
-                  >
-                    <option>-- Select Manager--</option>
-                    { list.managerList.length &&
-                      list.managerList.map( ( el ) => (
-                        <option key={ el.id } value={ el.id }>
-                          { el.fullName + ' | ' + el.email }
+                          { el.code }
                         </option>
                       ) ) }
                   </select>

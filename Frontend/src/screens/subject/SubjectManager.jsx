@@ -24,7 +24,6 @@ const SubjectManager = () => {
   const dispatch = useDispatch()
   useEffect( () => {
     localStorage.removeItem( 'subject-update' )
-    localStorage.removeItem( 'subject-classes' )
   }, [location] )
   const subject = JSON.parse( localStorage.getItem( 'subject-update' ) )
   
@@ -36,8 +35,8 @@ const SubjectManager = () => {
     <>
       <div style={ {display: 'flex'} }>
         <HeaderContent
-          pageTitle={ 'Manage Subject' }
-          pageName={ 'Manage Subject' }
+          pageTitle={ 'Subject Management' }
+          pageName={ 'Subject Management' }
           prePage={ 'Dashboard' }
         />
       </div>

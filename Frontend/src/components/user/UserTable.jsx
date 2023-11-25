@@ -42,7 +42,6 @@ const UserTable = (
         return { sortBy, order: 'ascend' };
       }
     });
-    console.log(sort);
   };
   return (
     <div className='row'>
@@ -91,7 +90,7 @@ const UserTable = (
                 </tbody>
               </table>
               <Pagination page={ page } paging={ paging } handlePageNumber={ handlePageNumber }
-                          handleIncreaseOrdecrease={ handleIncreaseOrDecrease } />
+                          handleIncreaseOrDecrease={ handleIncreaseOrDecrease } />
             </div>
           </div>
         </div>

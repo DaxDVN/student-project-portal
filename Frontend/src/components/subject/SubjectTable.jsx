@@ -159,7 +159,7 @@ const SubjectTable = ( props ) => {
       </table>
       {status === 'true' &&
       <Pagination page={ page } paging={ paging } handlePageNumber={ handlePageNumber }
-                  handleIncreaseOrdecrease={ handleIncreaseOrDecrease }/>
+                  handleIncreaseOrDecrease={ handleIncreaseOrDecrease }/>
       }
     </>
   )

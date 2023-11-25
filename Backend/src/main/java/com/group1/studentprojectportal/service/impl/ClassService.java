@@ -1,6 +1,7 @@
 package com.group1.studentprojectportal.service.impl;
-import org.springframework.data.jpa.domain.Specification;
+
 import com.group1.studentprojectportal.constant.ClassStatuses;
+import com.group1.studentprojectportal.constant.Roles;
 import com.group1.studentprojectportal.entity.ClassEntity;
 import com.group1.studentprojectportal.entity.Subject;
 import com.group1.studentprojectportal.entity.User;
@@ -15,7 +16,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -55,36 +55,39 @@ public class ClassService implements IClassService {
 
     @Override
     public ResponseEntity<PagedResponse<ClassDto>> getAllClasses(Integer page, Integer size) {
-
         Pageable pageable =
                 PageRequest.of(page, size, Sort.Direction.DESC, "createdAt");
         Page<ClassEntity> classPage = classRepository.findAll(pageable);
         return getPagedResponseEntity(classPage);
     }
+
     @Override
     public ResponseEntity<PagedResponse<ClassDto>> getAllClasses(
-            Integer page, Integer size, String name,
-            Integer managerId, String status, String sortBy, String order
+            Integer page, Integer size, String code, String managerEmail,
+            String status, String semester, String sortBy, String order
     ) {
-        Sort.Direction sort;
-        String className = "";
-
-        if (order.equals("descend")) {
-            sort = Sort.Direction.DESC;
-        } else {
-            sort = Sort.Direction.ASC;
+        if (semester.isEmpty() || semester.equalsIgnoreCase("All Semester")){
+            semester = null;
         }
-        if (!name.isEmpty()) {
-            className = name;
-        }
+        Sort.Direction sort = (order.equals("descend")) ? Sort.Direction.DESC : Sort.Direction.ASC;
+        String classCode = (code.isEmpty()) ? null : code;
+        User manager = userRepository.findUserByEmail(managerEmail.trim());
         Pageable pageable = PageRequest.of(page, size, sort, sortBy);
+        Page<ClassEntity> classEntityPage = classRepository.findClassesWithFilters(classCode, semester, manager,
+                (status.equals("All Status")) ? null : ClassStatuses.valueOf(status),
+                pageable);
 
-        Specification<ClassEntity> specification = ClassSpecifications.filterClasses(managerId, className, status);
+        if (classEntityPage.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
 
-        Page<ClassEntity> classPage = classRepository.findAll(specification, pageable);
-        return getPagedResponseEntity(classPage);
+        List<ClassDto> classDTOs = classEntityPage.getContent().stream().map(this::entityToDTO).toList();
+        PagedResponse<ClassDto> classDTOPage = new PagedResponse<>(classDTOs, classEntityPage.getNumber(),
+                classEntityPage.getSize(), classEntityPage.getTotalElements(),
+                classEntityPage.getTotalPages(), classEntityPage.isLast());
+
+        return new ResponseEntity<>(classDTOPage, HttpStatus.OK);
     }
-
 
     @Override
     public List<UserResponse> getAllManagers() {
@@ -96,6 +99,28 @@ public class ClassService implements IClassService {
                 }
         );
         return managers.stream().map(userService::entityToResponse).toList();
+    }
+
+    @Override
+    public ResponseEntity<PagedResponse<UserResponse>> getAllStudentNotInSpecificClass(Integer classId, Integer page, Integer size){
+        Pageable pageable = PageRequest.of(page, size, Sort.Direction.DESC, "id");
+        Page<User> studentList = classRepository.findStudentsNotInClass(Roles.STUDENT, classId, pageable);
+        if (studentList.getNumberOfElements() == 0) {
+            PagedResponse<UserResponse> userList =
+                    new PagedResponse<>(Collections.emptyList(), studentList.getNumber(),
+                            studentList.getSize(), studentList.getTotalElements(),
+                            studentList.getTotalPages(), studentList.isLast());
+            return new ResponseEntity<>(userList, HttpStatus.NOT_FOUND);
+        }
+        List<UserResponse> userResponses =
+                studentList.getContent().stream()
+                        .map(userService::entityToResponse).toList();
+
+        PagedResponse<UserResponse> userList =
+                new PagedResponse<>(userResponses, studentList.getNumber(),
+                        studentList.getSize(), studentList.getTotalElements(),
+                        studentList.getTotalPages(), studentList.isLast());
+        return new ResponseEntity<>(userList, HttpStatus.OK);
     }
 
     @Override
@@ -113,6 +138,26 @@ public class ClassService implements IClassService {
                 PageRequest.of(page, size, Sort.Direction.DESC, "createdAt");
         Page<ClassEntity> classPage = classRepository.findClassEntitiesBySubject_Id(id, pageable);
         return getPagedResponseEntity(classPage);
+    }
+    @Override
+    public ResponseEntity<List<ClassDto>> getClassByUser(Integer id) {
+        List<ClassEntity> list = userRepository.findClassesByUserId(id);
+        List<ClassDto> listResponse = list.stream().map(this::entityToDTO).toList();
+        return new ResponseEntity<>(listResponse, HttpStatus.OK);
+    }
+    @Override
+    public ResponseEntity<PagedResponse<ClassDto>> getClassesByManager(
+            Integer id, Integer page, Integer size) {
+        Pageable pageable =
+                PageRequest.of(page, size, Sort.Direction.DESC, "createdAt");
+        Page<ClassEntity> classPage = classRepository.findClassesByManagerId(id, pageable);
+        return getPagedResponseEntity(classPage);
+    }
+    @Override
+    public ResponseEntity<List<ClassDto>> getClassesByManager(Integer id) {
+        List<ClassEntity> classEntities = classRepository.findClassesByManagerId(id);
+        List<ClassDto> classDtos = classEntities.stream().map(this::entityToDTO).toList();
+        return new ResponseEntity<>(classDtos, HttpStatus.OK);
     }
 
     private ResponseEntity<PagedResponse<ClassDto>> getPagedResponseEntity(Page<ClassEntity> classPage) {

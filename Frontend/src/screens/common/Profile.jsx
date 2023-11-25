@@ -54,7 +54,7 @@ const Profile = () => {
             </ul>
           </div>
           <div className="tab-content profile-tab-cont">
-            <ProfileDetail isDetail={isDetail} currentUser={currentUser}/>
+            <ProfileDetail load={load} setLoad={setLoad} isDetail={isDetail} currentUser={currentUser}/>
             <ProfilePassword isDetail={isDetail} currentUser={currentUser}/>
           </div>
         </div>

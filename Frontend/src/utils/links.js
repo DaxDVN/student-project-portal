@@ -24,7 +24,7 @@ const links = [
     id: 4,
     text: 'Class',
     path: '/class-manager',
-    roles: ['SUBJECT_MANAGER'],
+    roles: ['SUBJECT_MANAGER', 'LECTURE'],
     sub_links: [],
   },
   {
@@ -39,18 +39,7 @@ const links = [
     text: 'Project',
     path: '/project',
     roles: ['LECTURE'],
-    sub_links: [
-      {
-        id: 1,
-        text: 'Project List',
-        path: '/project',
-      },
-      {
-        id: 2,
-        text: 'Project Add',
-        path: '/new-project',
-      },
-    ],
+    sub_links: [],
   },
   {
     id: 8,

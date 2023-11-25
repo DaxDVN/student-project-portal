@@ -54,7 +54,7 @@ export const addSubjectThunk = async (url, subject, thunkAPI) => {
     })
     return resp.data
   } catch (error) {
-    return thunkAPI.rejectWithValue(error.response.data.message)
+    return thunkAPI.rejectWithValue(error.response.data)
   }
 }
 export const updateSubjectThunk = async (url, subject, thunkAPI) => {

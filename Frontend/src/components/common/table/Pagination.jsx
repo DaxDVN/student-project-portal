@@ -1,6 +1,6 @@
 import React from 'react'
 
-const Pagination = ({paging, handleIncreaseOrDecrease: handleIncreaseOrDecrease, page, handlePageNumber}) => {
+const Pagination = ({paging, handleIncreaseOrDecrease, page, handlePageNumber}) => {
   return (
     <ul className='pagination mt-3' style={{display: 'flex', justifyContent: 'center'}}>
       <li className='page-item' style={{display: page.currentPage > 1 ? 'block' : 'none'}}>

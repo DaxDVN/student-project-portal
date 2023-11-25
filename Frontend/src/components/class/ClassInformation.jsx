@@ -37,7 +37,7 @@ const ClassInformation = (prop) => {
   return (
     <div
       className='card-body'
-      style={{ display: tab === 'Information' ? 'block' : 'none' }}
+      style={{ display: tab === 'General' ? 'block' : 'none' }}
     >
       <h5 className='card-title d-flex justify-content-between'>
         <span>View Class</span>

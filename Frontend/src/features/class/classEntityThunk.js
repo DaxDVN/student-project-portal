@@ -88,7 +88,7 @@ export const addClassThunk = async (url, classRequest, thunkAPI) => {
     })
     return resp.data
   } catch (error) {
-    return thunkAPI.rejectWithValue(error.response.data.message)
+    return thunkAPI.rejectWithValue(error.response.status)
   }
 }
 export const addStudentToClassThunk = async (url, classRequest, thunkAPI) => {

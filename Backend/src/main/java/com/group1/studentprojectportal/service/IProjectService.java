@@ -1,9 +1,7 @@
 package com.group1.studentprojectportal.service;
 
-import com.group1.studentprojectportal.constant.SystemSettings;
-import com.group1.studentprojectportal.payload.PagedResponse;
-import com.group1.studentprojectportal.payload.SystemSettingDto;
 import com.group1.studentprojectportal.payload.ProjectDto;
+import com.group1.studentprojectportal.payload.UserRequest;
 import org.springframework.http.ResponseEntity;
 
 import java.util.List;
@@ -11,14 +9,18 @@ import java.util.List;
 public interface IProjectService {
 
     ResponseEntity<ProjectDto> addProject(ProjectDto projectDto);
-    ResponseEntity<ProjectDto> addSystemSetting(ProjectDto request);
-    ResponseEntity<ProjectDto>  updateSystemSetting(Integer id, ProjectDto request);
-    ResponseEntity<ProjectDto> deleteSystemSettingById(Integer id);
-    ResponseEntity<PagedResponse<ProjectDto>> getAllSystemSettings(Integer page, Integer size);
 
-    ResponseEntity<List<ProjectDto>> getAllSystemSettingsByGroup(Integer page, Integer size, ProjectDto settingGroup);
+    List<ProjectDto> getProjectByClass(Integer id);
 
-    ResponseEntity<List<ProjectDto>> getAllSystemSettings();
+    List<ProjectDto> getProjectByManager(Integer id);
 
-    ResponseEntity<ProjectDto> getSystemSettingById(Integer id);
+    ResponseEntity<ProjectDto> getProjectById(Integer id);
+
+    ResponseEntity<List<ProjectDto>> getProjectByUser(Integer id);
+
+    ResponseEntity<ProjectDto> addStudentToProject(Integer projectId, List<UserRequest> studentList);
+
+    ResponseEntity<ProjectDto> removeStudentFromProject(Integer projectId, Integer userId);
+
+    ResponseEntity<ProjectDto> updateProject(Integer id, ProjectDto request);
 }

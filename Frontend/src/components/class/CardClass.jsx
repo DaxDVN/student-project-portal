@@ -5,7 +5,7 @@ import {getSubjectById} from '../../features/subject/subjectSlice.js'
 import {Link, useLocation} from 'react-router-dom'
 import {removeClass, toggleClassDetail, updateClassStatus} from '../../features/class/classEntitySlice.js'
 
-const CardClass = ( {classElement, load, setLoad} ) => {
+const CardClass = ( {classElement, load, setLoad, role} ) => {
   let status = ''
   const location = useLocation()
   useEffect( () => {
@@ -97,22 +97,30 @@ const CardClass = ( {classElement, load, setLoad} ) => {
         <td>{ memoizedSubject.code }</td>
         <td>{ memoizedManager ? memoizedManager.fullName : '' }</td>
         <td>{ classElement.status }</td>
-        <td>
-          <Link to={ '../class-detail' }
-                onClick={ () => dispatch( toggleClassDetail( classElement ) ) }
-                className='btn btn-info'>View</Link>
-          <button className='btn btn-danger'
-                  style={ {display: classElement.status === 'CANCELLED' ? 'none' : ''} }
-                  onClick={ cancelledClass }>
-            Cancel
-          </button>
-          <button className='btn btn-outline-secondary'
-                  style={ {display: classElement.students.length !== 0 ? 'none' : ''} }
-                  onClick={ removePendingClass }>
-            Remove
-          </button>
-        </td>
-      
+        {
+          role == null &&
+          (
+            <>
+              <td>
+                <Link to={ '../class-detail' }
+                      onClick={ () => dispatch( toggleClassDetail( classElement ) ) }
+                      className='btn btn-info'>View</Link>
+                
+                <button className='btn btn-danger'
+                        style={ {display: classElement.status === 'CANCELLED' ? 'none' : ''} }
+                        onClick={ cancelledClass }>
+                  Cancel
+                </button>
+                <button className='btn btn-outline-secondary'
+                        style={ {display: classElement.status === 'PENDING' ? '' : 'none'} }
+                        onClick={ removePendingClass }>
+                  Remove
+                </button>
+              
+              </td>
+            </>
+          )
+        }
       
       </tr>
     </>

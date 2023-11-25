@@ -64,6 +64,13 @@ public class UserController {
         log.info("user role");
         return userService.getUsersByRole(role.toUpperCase());
     }
+    @GetMapping("/class/{id}/free")
+    public ResponseEntity<List<UserResponse>> getUserFreeInClass(
+            @PathVariable Integer id
+    ) {
+        log.info("user role");
+        return userService.getUsersFreeInClass(id);
+    }
 
     @GetMapping("/role/{role}")
     public ResponseEntity<PagedResponse<UserResponse>> getUserByRole(
@@ -73,6 +80,14 @@ public class UserController {
     ) {
         log.info("user role");
         return userService.getUsersByRole(role.toUpperCase(), page, size);
+    }
+    @GetMapping("/list/{list}")
+    public ResponseEntity<List<UserResponse>> getUserByListId(
+            @PathVariable List<Integer> list
+    ) {
+        log.info("user test");
+        log.info("{}", list);
+        return userService.getUsersByListId(list);
     }
 
     @GetMapping("/{id}")

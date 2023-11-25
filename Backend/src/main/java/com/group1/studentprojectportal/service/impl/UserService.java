@@ -4,6 +4,7 @@ package com.group1.studentprojectportal.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.group1.studentprojectportal.constant.Roles;
 import com.group1.studentprojectportal.entity.User;
+import com.group1.studentprojectportal.payload.ClassDto;
 import com.group1.studentprojectportal.payload.PagedResponse;
 import com.group1.studentprojectportal.payload.UserRequest;
 import com.group1.studentprojectportal.payload.UserResponse;
@@ -30,6 +31,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -45,6 +47,7 @@ public class UserService implements IUserService {
     private final IUserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
+
     public UserService(
             AuthenticationManager authenticationManager,
             DataEncrypt dataEncrypt,
@@ -208,6 +211,7 @@ public class UserService implements IUserService {
         UserResponse userResponse = entityToResponse(user);
         return new ResponseEntity<>(userResponse, HttpStatus.OK);
     }
+
     @Override
     public ResponseEntity<UserResponse> updateAvatar(Integer id, UserRequest user) {
         User userDB = userRepository.findUserById(id);
@@ -215,7 +219,6 @@ public class UserService implements IUserService {
         User newUser = userRepository.save(userDB);
         return new ResponseEntity<>(entityToResponse(newUser), HttpStatus.OK);
     }
-
 
 
     @Override
@@ -253,7 +256,7 @@ public class UserService implements IUserService {
                 break;
         }
 
-        while (page >= 0){
+        while (page >= 0) {
             Pageable pageable = PageRequest.of(page, size, sort, sortBy);
             Page<User> userPage;
             if (status.equals("All Status")) {
@@ -277,7 +280,7 @@ public class UserService implements IUserService {
                             );
                 }
             }
-            if (userPage.isEmpty() && page != 0){
+            if (userPage.isEmpty() && page != 0) {
                 page = 0;
                 continue;
             }
@@ -288,7 +291,7 @@ public class UserService implements IUserService {
     }
 
     private ResponseEntity<PagedResponse<UserResponse>> getPagedResponseResponseEntity(Page<User> userPage) {
-        if (userPage == null){
+        if (userPage == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         if (userPage.getNumberOfElements() == 0) {
@@ -319,6 +322,13 @@ public class UserService implements IUserService {
         return getPagedResponseResponseEntity(userPage);
     }
 
+    @Override
+    public ResponseEntity<List<UserResponse>> getStudentsWithinClass(Integer classId) {
+        List<User> userList = userRepository.findUsersByClasses_Id(classId);
+        List<UserResponse> userResponses = userList.stream().map(this::entityToResponse).toList();
+        return new ResponseEntity<>(userResponses, HttpStatus.OK);
+    }
+
 
     @Override
     public ResponseEntity<PagedResponse<UserResponse>> getUsersByRole(String role, Integer page, Integer size) {
@@ -326,6 +336,27 @@ public class UserService implements IUserService {
 
         Page<User> userPage = userRepository.findUsersByRole(Roles.valueOf(role), pageable);
         return getPagedResponseResponseEntity(userPage);
+    }
+
+    public ResponseEntity<List<UserResponse>> getUsersByListId(List<Integer> listId) {
+        if (!listId.isEmpty()) {
+            List<UserResponse> userResponses = new ArrayList<>();
+            listId.forEach(
+                    e -> {
+                        User user = userRepository.findUserById(e);
+                        userResponses.add(entityToResponse(user));
+                    }
+            );
+            return new ResponseEntity<>(userResponses, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @Override
+    public ResponseEntity<List<UserResponse>> getUsersFreeInClass(Integer classId) {
+        List<User> userList = userRepository.findStudentsNotInProjectsOfClass(classId);
+        List<UserResponse> userResponses = userList.stream().map(this::entityToResponse).toList();
+        return new ResponseEntity<>(userResponses, HttpStatus.OK);
     }
 
     @Override
@@ -376,6 +407,7 @@ public class UserService implements IUserService {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
     @Override
     public ResponseEntity<UserResponse> changePassword(String id, String newPass, String oldPass) {
         User user = userRepository.findUserById(Integer.parseInt(id));
@@ -383,7 +415,7 @@ public class UserService implements IUserService {
                 authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(
                                 user.getEmail(), oldPass));
-        if (authentication.isAuthenticated()){
+        if (authentication.isAuthenticated()) {
             newPass = passwordEncoder.encode(newPass.trim());
             user.setPassword(newPass);
             user = userRepository.save(user);
@@ -391,6 +423,7 @@ public class UserService implements IUserService {
         }
         return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
+
     //  =======-------=======-------sub-function-------=======-------=======
     public User preprocessingInfo(User userInput) {
         try {

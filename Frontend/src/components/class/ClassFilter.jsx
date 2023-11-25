@@ -2,30 +2,43 @@ import React, {useEffect, useState} from 'react';
 import ComboBox from '../common/combo-box/ComboBox.jsx';
 import {useDispatch} from 'react-redux';
 import {getAllManagers} from '../../features/class/classEntitySlice.js';
+import {getListOfSystemSettingWithoutPaging} from '../../features/system-setting/systemSettingSlice.js';
 
 const ClassFilter = (
   {
     submitFilter,
     selectedManager,
     selectedStatus,
+    selectedSemester,
     searchName,
     setSelectedManager,
     setSelectedStatus,
+    setSelectedSemester,
     setSearchName,
   },
 ) => {
   
   const dispatch = useDispatch();
-  const status = ['Enable', 'Disable'];
-  const [roles, setRoles] = useState( [] );
-  
+  const [comboBox, setComboBox] = useState({
+    manager: [],
+    semester: [],
+    status: ['CANCELLED','COMPLETED','ONGOING','PENDING']
+  });
   useEffect( () => {
     const fetchData = async () => {
       try {
         const response =
           await dispatch( getAllManagers() );
-        const roleArray = response.payload.map( roleEl => roleEl.fullName +  " | "+ roleEl.email);
-        setRoles( roleArray );
+        const managerArray = response.payload.map( roleEl => roleEl.fullName +  " | "+ roleEl.email);
+        
+        const responseSemester = await dispatch(
+          getListOfSystemSettingWithoutPaging({
+            group: "SEMESTER"
+          })
+        )
+        const semesterArray = responseSemester.payload.map(el => el.name);
+        setComboBox({...comboBox, manager: managerArray, semester: semesterArray} );
+        
       } catch (error) {
         console.error( 'Error fetching roles:', error );
       }
@@ -35,7 +48,7 @@ const ClassFilter = (
   
   useEffect( () => {
     submitFilter();
-  }, [selectedManager, selectedStatus, searchName] );
+  }, [selectedManager, selectedStatus, selectedSemester, searchName] );
   
   const handleManagerChange = ( e ) => {
     setSelectedManager( e.target.value );
@@ -47,6 +60,9 @@ const ClassFilter = (
   
   const handleSearchNameChange = ( e ) => {
     setSearchName( e.target.value );
+  };
+  const handleSemesterChange = ( e ) => {
+    setSelectedSemester( e.target.value );
   };
   
   return (
@@ -64,15 +80,21 @@ const ClassFilter = (
       </div>
       <ComboBox
         name='All Manager'
-        selection={ roles }
+        selection={ comboBox.manager}
         value={ selectedManager }
         onChange={ handleManagerChange }
       />
       <ComboBox
         name='All Status'
-        selection={ status }
+        selection={ comboBox.status }
         value={ selectedStatus }
         onChange={ handleStatusChange }
+      />
+      <ComboBox
+        name='All Semester'
+        selection={ comboBox.semester }
+        value={ selectedSemester }
+        onChange={ handleSemesterChange }
       />
     </div>
   );

@@ -16,7 +16,11 @@ public interface IUserService {
 
     ResponseEntity<PagedResponse<UserResponse>> getStudentsWithinClass(Integer classId, Integer page, Integer size);
 
+    ResponseEntity<List<UserResponse>> getStudentsWithinClass(Integer classId);
+
     ResponseEntity<PagedResponse<UserResponse>> getUsersByRole(String role, Integer page, Integer size);
+
+    ResponseEntity<List<UserResponse>> getUsersFreeInClass(Integer classId);
 
     ResponseEntity<List<UserResponse>> getUsersByRole(String role);
 

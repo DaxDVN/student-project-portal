@@ -10,7 +10,7 @@ import {
   getTokenByIdThunk,
   loginUserThunk,
   registerUserThunk,
-  resetPasswordThunk, sendEmailVerifyThunk, updatePasswordThunk,
+  resetPasswordThunk, sendEmailVerifyThunk, updatePasswordThunk, viewDashboardThunk,
 } from './commonThunk.js'
 
 const initialState = {
@@ -59,6 +59,13 @@ export const getTokenById = createAsyncThunk(
   'common/getTokenById',
   async (user, thunkAPI) => {
     return getTokenByIdThunk(`/users/${user.id}/token`, thunkAPI)
+  }
+)
+
+export const viewDashboard = createAsyncThunk(
+  'common/viewDashboard',
+  async (user, thunkAPI) => {
+    return viewDashboardThunk(`/dashboard/${user.role}`, thunkAPI)
   }
 )
 
@@ -116,13 +123,9 @@ const commonSlice = createSlice({
       .addCase(registerUser.fulfilled, (state) => {
         state.isLoading = false
         state.authStatus = true
-        toast.success('Register New Account Successfully, Please Check Your Email To Verify')
       })
       .addCase(registerUser.rejected, (state, { payload }) => {
         state.isLoading = false
-        if (payload === undefined) {
-          toast.error('Already exist!')
-        }
       })
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true
@@ -145,7 +148,6 @@ const commonSlice = createSlice({
         state.isLoading = true
       })
       .addCase(resetPassword.fulfilled, (state) => {
-        toast.success('Check your email to reset your password')
         state.isLoading = false
       })
       .addCase(resetPassword.rejected, (state) => {
@@ -181,6 +183,15 @@ const commonSlice = createSlice({
         state.isLoading = false
       })
       .addCase(sendEmailVerify.rejected, (state) => {
+        state.isLoading = false
+      })
+      .addCase(viewDashboard.pending, (state) => {
+        state.isLoading = true
+      })
+      .addCase(viewDashboard.fulfilled, (state) => {
+        state.isLoading = false
+      })
+      .addCase(viewDashboard.rejected, (state) => {
         state.isLoading = false
       })
   }

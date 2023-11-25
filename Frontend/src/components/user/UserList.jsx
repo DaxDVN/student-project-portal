@@ -1,9 +1,6 @@
 import React, {useState} from 'react'
-import {toggleForm} from '../../features/user/userSlice.js'
 import UserTable from './UserTable.jsx'
 import {useDispatch, useSelector} from 'react-redux'
-import {addStudentToClass} from '../../features/class/classEntitySlice.js'
-import Pagination from '../common/table/Pagination.jsx';
 
 const UserList = ( {page, setPage, userList, load, setLoad, typeOfPage, setSort, sort} ) => {
   const {isFormDisplay} = useSelector( store => store.user )

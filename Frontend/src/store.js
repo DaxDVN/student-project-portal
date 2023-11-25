@@ -4,6 +4,7 @@ import commonSlice from './features/common/commonSlice.js'
 import subjectSlice from './features/subject/subjectSlice.js'
 import classEntitySlice from './features/class/classEntitySlice.js'
 import systemSettingSlice from './features/system-setting/systemSettingSlice.js'
+import projectSlice from './features/project/projectSlice.js';
 
 export const store = configureStore({
   reducer: {
@@ -11,6 +12,7 @@ export const store = configureStore({
     common: commonSlice,
     subject: subjectSlice,
     classEntity: classEntitySlice,
-    systemSetting: systemSettingSlice
+    systemSetting: systemSettingSlice,
+    project: projectSlice,
   }
 })

@@ -5,6 +5,7 @@ import com.group1.studentprojectportal.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 public interface ISubjectRepository extends JpaRepository<Subject, Integer> {
     Subject findSubjectById(Integer id);
@@ -20,4 +21,6 @@ public interface ISubjectRepository extends JpaRepository<Subject, Integer> {
     Page<Subject> findSubjectByIsEnableAndNameContaining(
             boolean isEnable, String name, Pageable pageable
     );
+    @Query("SELECT COUNT(s) FROM Subject s")
+    long countSubjects();
 }

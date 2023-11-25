@@ -6,7 +6,7 @@ import ClassInformation from '../../components/class/ClassInformation.jsx'
 import TabClass from '../../components/class/TabClass.jsx'
 import ClassUpdate from '../../components/class/ClassUpdate.jsx'
 
-const tabs = ['General', 'Information', 'Student', 'Milestone']
+const tabs = ['General', 'Student']
 
 const ClassDetail = () => {
   let currentClass = JSON.parse(localStorage.getItem('current-class'))
@@ -31,12 +31,11 @@ const ClassDetail = () => {
       break
   }
   const [isUpdate, setIsUpdate] = useState(false);
-  console.log(isUpdate)
   return (
     <>
       <HeaderContent
-        pageTitle={'Project Information'}
-        pageName={'Project Information'}
+        pageTitle={'Class Details'}
+        pageName={'Class Details'}
         prePage={prePage}
       />
       <div className='profile-header'>

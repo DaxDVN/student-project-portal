@@ -53,7 +53,7 @@ const Password = () => {
     }
     
     if (password !== passwordConfirm) {
-      setError( 'You are dumb, whereas I am stupid,,,, we is same same, whereas your pass is not!' )
+      setError( 'Password confirm is not the same!' )
     }
     
     await dispatch( updatePassword( {

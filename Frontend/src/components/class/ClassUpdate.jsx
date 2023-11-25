@@ -8,7 +8,7 @@ const ClassUpdate = ( prop) => {
   const currentClass = prop.currentClass
   const [tabSetting, setTabSetting] = useState('update')
   return (
-    <div className='card-body' style={{ display: tab === 'Information' ? 'block' : 'none' }}>
+    <div className='card-body' style={{ display: prop.isUpdate === true ? 'block' : 'none' }}>
       <h5 className='card-title d-flex justify-content-between'>
         <span>Edit Class</span>
         <i className="fa fa-close" onClick={()=> prop.setIsUpdate(!prop.isUpdate)}/>

@@ -5,7 +5,7 @@ import Layout from './layout/Layout.jsx';
 import {Blank, Dashboard, Password, Profile} from './screens/common/index.js';
 import {UserManager} from './screens/user/index.js';
 import {SubjectManager} from './screens/subject/index.js';
-import {ProjectDetail, ProjectList, ProjectModify} from './screens/project/index.js';
+import {ProjectDetail, ProjectList} from './screens/project/index.js';
 import { AssignmentList, NewAssignment} from './screens/assignment/index.js';
 import {
   NewSystemSetting,
@@ -43,7 +43,6 @@ function App() {
           <Route path={ '/class-manager' } element={ <ClassManager/> }/>
           <Route path={ '/class-detail' } element={ <ClassDetail/> }/>
           
-          <Route path={ '/project-modify' } element={ <ProjectModify/> }/>
           <Route path={ '/project-detail' } element={ <ProjectDetail/> }/>
           <Route path={ '/project' } element={ <ProjectList/> }/>
           <Route path={ '/profile' } element={ <Profile/> }/>

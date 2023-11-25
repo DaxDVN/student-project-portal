@@ -1,32 +1,31 @@
 package com.group1.studentprojectportal.payload;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.group1.studentprojectportal.payload.dto.ClassDto;
-import com.group1.studentprojectportal.payload.UserDto;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
+import java.sql.Timestamp;
+
 import java.util.Set;
 
-@AllArgsConstructor
+@Data
+@Builder
 @NoArgsConstructor
-@Getter
-@Setter
-@JsonInclude(JsonInclude.Include.NON_NULL)
+@AllArgsConstructor
 public class ProjectDto {
     private Integer id;
-    private UserDto creator;
-    @NotNull
-    private ClassDto classDto;
-    private Set<UserDto> members;
-    @NotNull
-    private UserDto mentor;
-    private UserDto leader;
+    private Integer creatorId;
+    private Integer classId;
+    private Set<Integer> memberIds;
+    private Integer mentorId;
+    private Integer leaderId;
     private Boolean isActive;
     private String projectName;
     private String groupName;
     private String title;
     private String description;
+    private Timestamp created_at;
+    private String updatedBy;
+    private Timestamp updated_at;
+    private String createdBy;
 }

@@ -22,7 +22,6 @@ const UserFilter = ( {
       try {
         const response
           = await dispatch( getListOfSystemSettingByGroup( {group: 'ROLE'} ) );
-        console.log(response)
         const roleArray = response.payload.content.map( roleEl => {
           return roleEl.name.includes( '_' )
             ? `${ roleEl.name.split( '_' )[0] } ${ roleEl.name.split( '_' )[1] }`

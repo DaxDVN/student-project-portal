@@ -3,6 +3,7 @@ import { addUser, getCurrentUser, toggleForm, updateUser } from '../../features/
 import { useDispatch } from 'react-redux'
 import { toast, ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import {validateUser} from '../../utils/validateUser.js';
 
 const initialForm = {
   fullName: '',
@@ -12,7 +13,8 @@ const initialForm = {
   note: '',
   status: '',
   role: '',
-  createAt: ''
+  createAt: '',
+  avatar: ''
 }
 const UserForm = ({
   load,
@@ -21,6 +23,8 @@ const UserForm = ({
 }) => {
   const dispatch = useDispatch()
   const [formData, setFormData] = useState(initialForm)
+  const [error, setError] = useState('')
+  
   const user = JSON.parse(localStorage.getItem('user-update'))
   useEffect(() => {
     if (isFormDisplay === false) {
@@ -29,11 +33,12 @@ const UserForm = ({
       return
     }
     if (user != null) {
-      console.log(user.created_at)
+      console.log(user)
       const status = user.isVerified === false ? 'Unverified' : (user.isEnable === false ? 'Disable' : 'Enable')
       setFormData({
         ...formData,
         fullName: user.fullName,
+        avatar: user.avatar,
         password: '',
         email: user.email,
         phone: user.phone,
@@ -57,6 +62,11 @@ const UserForm = ({
   
   const handleSubmit = async (e) => {
     e.preventDefault()
+    const validation = validateUser( {...formData, password: "thisIsOk", passwordConfirm: "thisIsOk"})
+    if (validation !== '') {
+      setError(validation)
+      return
+    }
     if (user == null) {
       await dispatch(addUser(formData))
         .then((response) => {
@@ -68,7 +78,7 @@ const UserForm = ({
               dispatch(toggleForm())
             }, 500)
           } else {
-            toast.error('fucking duplicating')
+            toast.error('There is a duplication')
           }
         })
     } else {
@@ -87,14 +97,19 @@ const UserForm = ({
             .then((response) => {
               if (response.type.includes('fulfilled')) {
                 setLoad(!load)
-                toast.success('Update successfully!')
-                // setTimeout(() => {
-                //   setFormData(initialForm)
-                //   dispatch(toggleForm())
-                // }, 500
-                // )
+                if (response.type.includes('update')){
+                  toast.success('Update successfully!')
+                }
+                else{
+                  toast.success('Add successfully!')
+                }
+                setTimeout(() => {
+                  setFormData(initialForm)
+                  dispatch(toggleForm())
+                }, 500
+                )
               } else {
-                toast.error('fucking duplicating')
+                toast.error('There is an error when updating')
               }
             })
         })
@@ -118,7 +133,7 @@ const UserForm = ({
         borderRadius: '10px',
       }}>
         <div className={'row mb-3 mr-1'}>
-          <h5 className='card-title col-11' style={{ zIndex: '999' }}>Personal details</h5>
+          <h5 className='card-title col-11' style={{ zIndex: '999' }}>User details</h5>
           <button className={'btn btn-primary col-1'} onClick={() => {
             dispatch(toggleForm())
           }}>
@@ -134,7 +149,7 @@ const UserForm = ({
             <img
               className='avatar-img rounded-circle'
               alt='User Image'
-              src='https://i.ytimg.com/vi/l3F9zjrH-Ew/maxresdefault.jpg'
+              src={user !== null ? user.avatar : 'https://static-00.iconduck.com/assets.00/avatar-default-symbolic-icon-2048x1949-pq9uiebg.png'}
             />
           </div>
         </div>
@@ -256,6 +271,7 @@ const UserForm = ({
               </div>
             </div>
           </div>
+          <p style={{ color: 'red' }}>{error || ''}</p>
           <div className='row mb-5'>
             <div className='col-12' style={{
               display: 'flex',

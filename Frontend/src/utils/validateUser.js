@@ -1,7 +1,7 @@
 import validator from 'validator'
 
 export const validateUser = (user) => {
-  const { fullName, email, password, passwordConfirm, isMember, isForgot } =
+  const { fullName, email, phone, password, passwordConfirm, isMember, isForgot } =
     user
 
   if (!email) {
@@ -32,11 +32,14 @@ export const validateUser = (user) => {
     return 'Please input password in range 7 to 17!'
   }
 
+  
   if (!isMember) {
     if (fullName.length > 70) {
       return 'Please input password in range 7 to 17!'
     }
-
+    if (phone.length !== 10 || phone[0] !== '8' || phone[1] !== '4'){
+      return 'Please input valid phone'
+    }
     if (passwordConfirm !== password) {
       return 'Password confirmed is not like the password!'
     }

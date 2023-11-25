@@ -6,7 +6,7 @@ export const registerUserThunk = async (url, user, thunkAPI) => {
     const resp = await customFetch.post(url, user)
     return resp.data
   } catch (error) {
-    return thunkAPI.rejectWithValue(error.response.data.status)
+    return thunkAPI.rejectWithValue(error.response.status)
   }
 }
 
@@ -46,6 +46,14 @@ export const updatePasswordThunk = async (url, user, thunkAPI) => {
   }
 }
 export const getTokenByIdThunk = async (url, thunkAPI) => {
+  try {
+    const resp = await customFetch.get(url)
+    return resp.data
+  } catch (error) {
+    return thunkAPI.rejectWithValue(error.response.data.status)
+  }
+}
+export const viewDashboardThunk = async (url, thunkAPI) => {
   try {
     const resp = await customFetch.get(url)
     return resp.data

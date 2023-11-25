@@ -89,7 +89,7 @@ public class SubjectService implements ISubjectService {
                 }
             } else {
                 boolean isEnabled = status.equalsIgnoreCase("Enable");
-                if (managerEmail.trim().isEmpty()) {
+                if (manager == null) {
                     subjectPage = subjectRepository
                             .findSubjectByIsEnableAndNameContaining(isEnabled, subjectName, pageable);
                     System.out.println(subjectPage.getTotalElements());

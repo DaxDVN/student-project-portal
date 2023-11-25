@@ -4,7 +4,7 @@ import CardClass from '../../components/class/CardClass.jsx';
 import {useDispatch, useSelector} from 'react-redux';
 import {
   getAllClasses,
-  getAllClassesWithSubject,
+  getAllClassesWithSubject, getManagerAssignedClass,
   toggleAdd,
   togglePagination,
 } from '../../features/class/classEntitySlice.js';
@@ -12,57 +12,84 @@ import {
 import CardForm from '../../components/class/CardForm.jsx';
 import Pagination from '../../components/common/table/Pagination.jsx';
 import ClassFilter from '../../components/class/ClassFilter.jsx';
+import {getCurrentUser} from '../../features/user/userSlice.js';
 
 const ClassManager = () => {
   const prePage = 'Dashboard';
   const [load, setLoad] = useState( false );
-  const [classEntitys, setClassEntitys] = useState( [] );
+  const [classEntities, setClassEntities] = useState( [] );
   const dispatch = useDispatch();
   const {pagination, isFormDisplay} = useSelector( store => store.classEntity )
-  
+  const [status, setStatus] = useState( false );
   const [selectedManager, setSelectedManager] = useState( '' );
   const [selectedStatus, setSelectedStatus] = useState( 'All Status' );
   const [searchName, setSearchName] = useState( '' );
-  
+  const [selectedSemester, setSelectedSemester] = useState( 'All Semester' );
+  const [currentUser, setCurrentUser] = useState()
   useEffect( () => {
     const fetchData = async () => {
-      const subject = JSON.parse( localStorage.getItem( 'subject-classes' ) );
-      if (subject != null) {
-        await dispatch(
-          getAllClassesWithSubject( {
-            id: subject.id,
-            currentPage: pagination.currentPage - 1,
-            pageSize: pagination.pageSize,
-          } ),
-        ).then( function ( response ) {
-          setClassEntitys( response.payload.content );
-          dispatch(
-            togglePagination( {
-              currentPage: response.payload.page + 1,
-              pageSize: response.payload.size,
-              totalPages: response.payload.totalPages,
-              last: response.payload.last,
+      await dispatch( getCurrentUser() ).then( async ( response ) => {
+        if (response.payload.role === 'SUBJECT_MANAGER') {
+          await dispatch(
+            getAllClasses( {
+              currentPage: pagination.currentPage - 1,
+              pageSize: pagination.pageSize,
+              code: searchName,
+              manager: selectedManager,
+              status: selectedStatus,
+              semester: selectedSemester,
+              sortBy: '',
+              order: '',
             } ),
-          );
-        } );
-      } else {
-        await dispatch(
-          getAllClasses( {
-            currentPage: pagination.currentPage - 1,
-            pageSize: pagination.pageSize,
-          } ),
-        ).then( function ( response ) {
-          setClassEntitys( response.payload.content );
-          dispatch(
-            togglePagination( {
-              currentPage: response.payload.page + 1,
-              pageSize: response.payload.size,
-              totalPages: response.payload.totalPages,
-              last: response.payload.last,
+          ).then( function ( response ) {
+            if (response.type.includes( 'fulfilled' )) {
+              setClassEntities( response.payload.content );
+              setStatus( true );
+              dispatch(
+                togglePagination( {
+                  currentPage: response.payload.page + 1,
+                  pageSize: response.payload.size,
+                  totalPages: response.payload.totalPages,
+                  last: response.payload.last,
+                } ),
+              );
+            } else {
+              setStatus( false );
+            }
+          } );
+        }
+        setCurrentUser( response.payload )
+        if (response.payload.role === 'LECTURE') {
+          await dispatch(
+            getManagerAssignedClass( {
+              currentPage: pagination.currentPage - 1,
+              pageSize: pagination.pageSize,
+              code: searchName,
+              manager: response.payload.id,
+              status: selectedStatus,
+              semester: selectedSemester,
+              sortBy: '',
+              order: '',
             } ),
-          );
-        } );
-      }
+          ).then( function ( response ) {
+            if (response.type.includes( 'fulfilled' )) {
+              setClassEntities( response.payload.content );
+              setStatus( true );
+              dispatch(
+                togglePagination( {
+                  currentPage: response.payload.page + 1,
+                  pageSize: response.payload.size,
+                  totalPages: response.payload.totalPages,
+                  last: response.payload.last,
+                } ),
+              );
+            } else {
+              setStatus( false );
+            }
+          } );
+        }
+      } )
+      
     };
     fetchData();
   }, [load, pagination.currentPage] );
@@ -84,6 +111,7 @@ const ClassManager = () => {
   
   
   const handleIncreaseOrDecrease = ( e ) => {
+    console.log( 1 )
     e.preventDefault();
     const change = e.currentTarget.getAttribute( 'id' );
     if (change.toLowerCase() === 'next' && pagination.last === false) {
@@ -115,10 +143,16 @@ const ClassManager = () => {
   return (
     <>
       <HeaderContent
-        pageTitle={ 'List of Class' }
-        pageName={ 'List of Class' }
+        pageTitle={ 'Class Management' }
+        pageName={ 'Class Management' }
         prePage={ prePage }
       />
+      <div
+        className={ 'row' }
+        style={ {display: 'flex', justifyContent: 'flex-end'} }
+      >
+      
+      </div>
       <div
         className={ 'mb-3' }
         style={ {
@@ -126,25 +160,34 @@ const ClassManager = () => {
           justifyContent: 'space-between',
         } }
       >
-        <ClassFilter
-          submitFilter={submitFilter}
-          selectedManager={selectedManager} setSelectedManager={setSelectedManager}
-          selectedStatus={selectedStatus} setSelectedStatus={setSelectedStatus}
-          searchName={searchName} setSearchName={setSearchName}
-        />
-        <button
-          className={ 'btn btn-primary' }
-          onClick={ () => {
-            dispatch( toggleAdd() );
-          } }
-        >
-          { isFormDisplay === true ? 'Add New Class ' : 'Add New Class ' }
-          { isFormDisplay === true ? (
-            <i className='fas fa-plus'></i>
-          ) : (
-            <i className='fas fa-plus'></i>
-          ) }
-        </button>
+        {
+          currentUser !== undefined && currentUser.role === 'SUBJECT_MANAGER' &&
+          (
+            <>
+              <ClassFilter
+                submitFilter={ submitFilter }
+                selectedManager={ selectedManager } setSelectedManager={ setSelectedManager }
+                selectedStatus={ selectedStatus } setSelectedStatus={ setSelectedStatus }
+                searchName={ searchName } setSearchName={ setSearchName }
+                selectedSemester={ selectedSemester } setSelectedSemester={ setSelectedSemester }
+              />
+              <button
+                className={ 'btn btn-primary' }
+                onClick={ () => {
+                  dispatch( toggleAdd() );
+                } }
+              >
+                { isFormDisplay === true ? 'Add New Class ' : 'Add New Class ' }
+                { isFormDisplay === true ? (
+                  <i className='fas fa-plus'></i>
+                ) : (
+                  <i className='fas fa-plus'></i>
+                ) }
+              </button>
+            </>
+          )
+        }
+      
       </div>
       <div className='row'>
         <div className='col-sm-12'>
@@ -164,13 +207,22 @@ const ClassManager = () => {
                   </tr>
                   </thead>
                   <tbody>
-                  {
-                    classEntitys.map(
+                  { status === true ?
+                    classEntities.map(
                       ( el ) => (
-                        <CardClass key={ el.id } classElement={ el } load={load} setLoad={setLoad}/>
+                        <CardClass key={ el.id } classElement={ el } load={ load } setLoad={ setLoad }/>
                       ),
                     )
-                  }
+                    : (
+                      <tr>
+                        <td className={ 'pb-5' }>
+                          
+                          <div className={ 'mt-3' } style={ {position: 'absolute', left: '30vw'} }>
+                            <h4>Data not found</h4>
+                          </div>
+                        </td>
+                      </tr>
+                    ) }
                   </tbody>
                 </table>
               
@@ -183,10 +235,9 @@ const ClassManager = () => {
           <CardForm load={ load } setLoad={ setLoad }/>
         </div>
       </div>
-      <div className={'mb-5'} style={{marginTop: '-20px'}}>
+      <div className={ 'mb-5' } style={ {marginTop: '-20px'} }>
         <Pagination page={ pagination } paging={ paging } handlePageNumber={ handlePageNumber }
-                    handleIncreaseOrdecrease={ handleIncreaseOrDecrease }/>
-      
+                    handleIncreaseOrDecrease={ handleIncreaseOrDecrease }/>
       </div>
     </>
   );

@@ -37,7 +37,7 @@ const SystemSettingTableRow = ( props ) => {
       toast.success( 'Successfully!' )
       props.setLoad( !props.load )
     } else {
-      toast.error( 'Failed, your input is so f*ckin stupid. Check it before you do something!' )
+      toast.error( 'Fail!' )
     }
   }
   const deleteSetting = async ( e ) => {

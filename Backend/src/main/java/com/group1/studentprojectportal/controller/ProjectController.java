@@ -1,9 +1,8 @@
 package com.group1.studentprojectportal.controller;
 
-import com.group1.studentprojectportal.payload.PagedResponse;
 import com.group1.studentprojectportal.payload.ProjectDto;
+import com.group1.studentprojectportal.payload.UserRequest;
 import com.group1.studentprojectportal.service.IProjectService;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,17 +19,41 @@ public class ProjectController {
     private IProjectService projectService;
 
 
-    @GetMapping()
-    public  ResponseEntity<PagedResponse<ProjectDto>> getProjects(){
-        return null;
-    }
-
     @PostMapping()
     public ResponseEntity<ProjectDto> addProject(
-            @RequestBody @Valid ProjectDto request) {
+            @RequestBody ProjectDto request) {
+        log.info("{}", request);
         return projectService.addProject(request);
     }
+    @GetMapping("class/{id}")
+    public List<ProjectDto> getProjectsByClass(
+            @PathVariable Integer id
+    ){
+        return projectService.getProjectByClass(id);
+    }
+    @GetMapping("manager/{id}")
+    public List<ProjectDto> getProjectsByManager(
+            @PathVariable Integer id
+    ){
+        return projectService.getProjectByManager(id);
+    }
 
+    @PostMapping("{id}/users")
+    public ResponseEntity<ProjectDto> updateStudentToProject(
+            @RequestParam(name = "action", required = false) String action,
+            @PathVariable Integer id,
+            @RequestBody List<UserRequest> studentList
+    ) {
+        if (action.equalsIgnoreCase("add")) {
+            return projectService.addStudentToProject(id, studentList);
+        } else {
+            return projectService.removeStudentFromProject(id, studentList.get(0).getId());
+        }
+    }
 
-
+    @GetMapping("/{id}/student/join")
+    public ResponseEntity<List<ProjectDto>> getClassByUser(
+            @PathVariable Integer id) {
+        return projectService.getProjectByUser(id);
+    }
 }

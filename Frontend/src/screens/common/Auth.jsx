@@ -26,6 +26,8 @@ const Auth = () => {
   const [values, setValues] = useState(initialState)
   const [error, setError] = useState('')
   const navigate = useNavigate()
+  const [loadingReset, setLoadingReset] = useState(false);
+  const [loadingWaiting, setLoadingWaiting] = useState(true);
   const {
     isLoading,
     authStatus
@@ -62,8 +64,23 @@ const Auth = () => {
       return
     }
     if (isForgot) {
+      setLoadingReset(true)
       dispatch(resetPassword({ email }))
-      setValues({ ...values, isForgot: false })
+        .then((response) => {
+          if (response.type.includes('fulfilled')){
+            setValues({ ...values, isForgot: false })
+            setLoadingWaiting(false)
+            setTimeout(
+              ()=>{
+                setLoadingWaiting(true)
+                setLoadingReset(false)
+              },2000
+            )
+          }
+          else{
+            toast.error('There is an error when sending data')
+          }
+        })
       return
     }
 
@@ -92,10 +109,20 @@ const Auth = () => {
           dispatch(sendEmailVerify({
             id
           })).then(
-            () => {
-              toast.success('Verify successfully!')
+            (response) => {
+              if(!response.type.includes('fulfilled')){
+                toast.error('There is an error when sending data')
+              }
+              else{
+                toast.success('Register New Account Successfully, Please Check Your Email To Verify')
+              }
             }
           )
+        }
+        else{
+          if (response.payload === 508){
+            setError('This user is already exist')
+          }
         }
       }
     )
@@ -125,16 +152,55 @@ const Auth = () => {
     <div className='main-wrapper auth-body'>
       <div className='auth-wrapper'>
         <div className='container'>
-          <div className='authbox'>
+          <div className='authbox' style={{position:'relative'}}>
             <ToastContainer
               position='top-center'
               autoClose={1000}
               style={{ width: '600px' }}
             />
-            <div className='auth-left'>
+            <div style={{
+              position: 'fixed',
+              top: 0, bottom: 0,
+              left: 0, right: 0,
+              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              zIndex: 800,
+              display: loadingReset ? 'block' : 'none'
+            }}>
+            </div>
+            <div style={{
+              backgroundColor:'white',
+              position: 'absolute',
+              zIndex: 999, width: '400px',
+              height: '200px', top: '20%',
+              left: '30%',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'column',
+              display: loadingReset ? 'flex' : 'none',
+            }}>
+              {
+                loadingWaiting === true ?
+                  (
+                    <>
+                     <span className="spinner-border spinner-border-sm mr-2" role="status"
+                           style={{width: '50px', height: '50px', borderWidth: '5px'}}></span>
+                      <h4 className={'mt-3'}>Waiting for mail sending</h4>
+                    </>
+                   
+                  ) :
+                (
+                  <>
+                    <i className={'fas fa-check'} style={{fontSize: '50px'}}></i>
+                    <h4 className={'mt-3'}>Check Your Email </h4>
+                    <h4>To Reset Password</h4>
+                  </>
+                )
+              }
+            </div>
+            <div className='auth-left' style={{padding: 0}}>
               <img
                 className='img-fluid'
-                src={'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/643ba095-9995-4da2-bbe3-c31ae72e28e1/da7n227-022174ee-59d5-4d49-a474-ccce5c7077cd.jpg?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiJcL2ZcLzY0M2JhMDk1LTk5OTUtNGRhMi1iYmUzLWMzMWFlNzJlMjhlMVwvZGE3bjIyNy0wMjIxNzRlZS01OWQ1LTRkNDktYTQ3NC1jY2NlNWM3MDc3Y2QuanBnIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.mUxAxKRlrvda_nD77vjkMEEBeeph4-2h42ENxEcR8-E'}
+                src={'https://i.pinimg.com/736x/a4/75/c8/a475c8dc7c69dc5098e494d6912bae62.jpg'}
                 alt='Logo'
               />
             </div>
